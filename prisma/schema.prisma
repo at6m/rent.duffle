@@ -1,0 +1,43 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql" url = env("DATABASE_URL") }
+
+model Collection {
+  id String @id @default(cuid())
+  name String
+  slug String @unique
+  accentColor String
+  description String?
+  coverImage String
+  gifts Gift[]
+  createdAt DateTime @default(now())
+}
+model Gift {
+  id String @id @default(cuid())
+  collection Collection @relation(fields: [collectionId], references: [id])
+  collectionId String
+  collectionNumber Int
+  pricePerDay Decimal @db.Decimal(12, 2)
+  maxRentableDays Int
+  gifUrl String
+  marketAppUrl String
+  status GiftStatus @default(CHECKING)
+  statusMessage String?
+  lastCheckedAt DateTime?
+  isListedOnSite Boolean @default(false)
+  rentals Rental[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+enum GiftStatus { FOR_RENT COOLDOWN RENTED UNAVAILABLE CHECKING ERROR }
+model Rental {
+  id String @id @default(cuid())
+  gift Gift @relation(fields: [giftId], references: [id])
+  giftId String
+  userId String
+  days Int
+  totalPrice Decimal @db.Decimal(12, 2)
+  startAt DateTime
+  endAt DateTime
+  createdAt DateTime @default(now())
+}
+model AdminUser { id String @id @default(cuid()); email String @unique; passwordHash String }
